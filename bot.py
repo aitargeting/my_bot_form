@@ -2,7 +2,7 @@ import gspread
 from datetime import datetime
 import os  # <-- Սա պետք է Render-ի TOKEN-ի համար
 from telegram import Update
-from telegram.ext import (  # <--- ՍԽԱԼԸ ՈՒՂՂՎԱԾ Է ԱՅՍՏԵՂ
+from telegram.ext import (
     Application,
     CommandHandler,
     ContextTypes,
@@ -10,26 +10,6 @@ from telegram.ext import (  # <--- ՍԽԱԼԸ ՈՒՂՂՎԱԾ Է ԱՅՍՏԵՂ
     MessageHandler,
     filters,
 )
-
-# --- ՆՈՐ ԳՈՐԾԻՔՆԵՐ RENDER-Ի ՀԱՄԱՐ ---
-import threading  # Թույլ է տալիս միաժամանակ աշխատեցնել բոտը և կայքը
-from flask import Flask
-# ------------------------------------
-
-# --- Flask վեբ սերվեր (որպեսզի Render-ը չանջատի բոտը) ---
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    # Սա այն է, ինչ Render-ը կտեսնի՝ համոզվելու համար, որ ծրագիրն աշխատում է
-    return "Bot is alive and running!"
-
-def run_flask():
-    # Render-ն ինքն է նշանակում պորտը, մենք այն վերցնում ենք
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
-# -------------------------------------------------------
-
 
 # --- ԿԱՐԳԱՎՈՐՈՒՄՆԵՐ ---
 # 1. TOKEN-ը վերցնում ենք Render-ի Environment Variable-ից
@@ -131,8 +111,14 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Գրանցումը չեղարկվեց։")
     return ConversationHandler.END
 
-def run_bot():
-    """Այս ֆունկցիան գործարկում է բոտը"""
+def main() -> None:
+    """Գործարկում է բոտը։"""
+    
+    # Ստուգում ենք, որ TOKEN-ը առկա է, նախքան որևէ բան սկսելը
+    if not BOT_TOKEN:
+        print("ՍԽԱԼ: BOT_TOKEN-ը գտնված չէ։ Համոզվեք, որ այն ավելացրել եք Render-ի Environment Variables-ում։")
+        exit()
+
     application = Application.builder().token(BOT_TOKEN).build()
 
     conv_handler = ConversationHandler(
@@ -156,17 +142,4 @@ def run_bot():
 
 # --- ՀԻՄՆԱԿԱՆ ԳՈՐԾԱՐԿՈՒՄ ---
 if __name__ == "__main__":
-    
-    # Ստուգում ենք, որ TOKEN-ը առկա է, նախքան որևէ բան սկսելը
-    if not BOT_TOKEN:
-        print("ՍԽԱԼ: BOT_TOKEN-ը գտնված չէ։ Համոզվեք, որ այն ավելացրել եք Render-ի Environment Variables-ում։")
-        exit()
-
-    print("1. Սկսում ենք Flask սերվերը նոր թրեդում...")
-    # Միացնում ենք կայքը առանձին թրեդով, որպեսզի բոտին չխանգարի
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
-    
-    print("2. Սկսում ենք Telegram բոտը հիմնական թրեդում...")
-    # Միացնում ենք բոտը
-    run_bot()
+    main()
