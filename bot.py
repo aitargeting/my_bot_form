@@ -1,7 +1,8 @@
 import gspread
 from datetime import datetime
-import os  # <-- ԱՎԵԼԱՑՐԵՔ ԱՅՍ ՏՈՂԸ
-from telegram import Update (
+import os  # <-- Սա պետք է Render-ի TOKEN-ի համար
+from telegram import Update
+from telegram.ext import (  # <--- ՍԽԱԼԸ ՈՒՂՂՎԱԾ Է ԱՅՍՏԵՂ
     Application,
     CommandHandler,
     ContextTypes,
@@ -13,7 +14,6 @@ from telegram import Update (
 # --- ՆՈՐ ԳՈՐԾԻՔՆԵՐ RENDER-Ի ՀԱՄԱՐ ---
 import threading  # Թույլ է տալիս միաժամանակ աշխատեցնել բոտը և կայքը
 from flask import Flask
-import os
 # ------------------------------------
 
 # --- Flask վեբ սերվեր (որպեսզի Render-ը չանջատի բոտը) ---
@@ -31,11 +31,11 @@ def run_flask():
 # -------------------------------------------------------
 
 
-# --- ԿԱՐԳԱՎՈՐՈՒՄՆԵՐ (Ձեր հին կարգավորումները) ---
+# --- ԿԱՐԳԱՎՈՐՈՒՄՆԵՐ ---
 # 1. TOKEN-ը վերցնում ենք Render-ի Environment Variable-ից
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
-# 2. Տեղադրեք ձեր credentials.json ֆայլի ճիշտ անունը
+# 2. Գաղտնի ֆայլի անունը (Render-ի "Secret Files"-ից)
 SERVICE_ACCOUNT_FILE = 'credentials.json' 
 
 # 3. Տեղադրեք ձեր Google Sheet ֆայլի ամբողջական URL-ը (հղումը)
@@ -53,11 +53,10 @@ try:
     print("Google Sheet-ը հաջողությամբ միացված է։")
 except Exception as e:
     print(f"Google Sheet-ի սխալ: {e}")
-    # Այստեղ exit() չենք անում, որպեսզի Render-ի լոգերում սխալը տեսնենք
     print("ՍՏՈՒԳԵՔ: credentials.json, SHEET_URL, Share, API settings...")
 # -------------------------------------
 
-# --- ՁԵՐ ԲՈՏԻ ԱՄԲՈՂՋ ԼՈԳԻԿԱՆ (առանց փոփոխության) ---
+# --- ՁԵՐ ԲՈՏԻ ԱՄԲՈՂՋ ԼՈԳԻԿԱՆ ---
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text(
@@ -157,6 +156,12 @@ def run_bot():
 
 # --- ՀԻՄՆԱԿԱՆ ԳՈՐԾԱՐԿՈՒՄ ---
 if __name__ == "__main__":
+    
+    # Ստուգում ենք, որ TOKEN-ը առկա է, նախքան որևէ բան սկսելը
+    if not BOT_TOKEN:
+        print("ՍԽԱԼ: BOT_TOKEN-ը գտնված չէ։ Համոզվեք, որ այն ավելացրել եք Render-ի Environment Variables-ում։")
+        exit()
+
     print("1. Սկսում ենք Flask սերվերը նոր թրեդում...")
     # Միացնում ենք կայքը առանձին թրեդով, որպեսզի բոտին չխանգարի
     flask_thread = threading.Thread(target=run_flask)
@@ -165,4 +170,3 @@ if __name__ == "__main__":
     print("2. Սկսում ենք Telegram բոտը հիմնական թրեդում...")
     # Միացնում ենք բոտը
     run_bot()
-
