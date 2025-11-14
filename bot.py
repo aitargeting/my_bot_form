@@ -1,7 +1,7 @@
 import gspread
 from datetime import datetime
-from telegram import Update
-from telegram.ext import (
+import os  # <-- ԱՎԵԼԱՑՐԵՔ ԱՅՍ ՏՈՂԸ
+from telegram import Update (
     Application,
     CommandHandler,
     ContextTypes,
@@ -32,8 +32,8 @@ def run_flask():
 
 
 # --- ԿԱՐԳԱՎՈՐՈՒՄՆԵՐ (Ձեր հին կարգավորումները) ---
-# 1. Տեղադրեք ձեր BotFather-ից ստացած TOKEN-ը
-BOT_TOKEN = "8048043305:AAEw8sVXR26k3Gt06Xa7P3E3K4ZYsxGj-9k"  # <-- ՁԵՐ ԲՈՏԻ TOKEN-Ը
+# 1. TOKEN-ը վերցնում ենք Render-ի Environment Variable-ից
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 # 2. Տեղադրեք ձեր credentials.json ֆայլի ճիշտ անունը
 SERVICE_ACCOUNT_FILE = 'credentials.json' 
@@ -165,3 +165,4 @@ if __name__ == "__main__":
     print("2. Սկսում ենք Telegram բոտը հիմնական թրեդում...")
     # Միացնում ենք բոտը
     run_bot()
+
