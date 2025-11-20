@@ -1,6 +1,5 @@
 import gspread
 from datetime import datetime
-import os
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -11,37 +10,17 @@ from telegram.ext import (
     filters,
 )
 
-# --- ՆՈՐ ԳՈՐԾԻՔՆԵՐ RENDER-Ի ՀԱՄԱՐ ---
-import asyncio  # Փոխարինում ենք threading-ը asyncio-ով
-from flask import Flask
-import uvicorn  # Սա է, որ թույլ կտա երկուսին աշխատել
-# ------------------------------------
-
-# --- Flask վեբ սերվեր (որպեսզի Render-ը չանջատի բոտը) ---
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is alive and running!"
-
-# Flask-ի սերվերը Uvicorn-ի միջոցով աշխատեցնելու համար
-class Server(uvicorn.Server):
-    def handle_exit(self, sig: int, frame) -> None:
-        return super().handle_exit(sig, frame)
-
-async def run_flask():
-    port = int(os.environ.get('PORT', 5000))
-    config = uvicorn.Config(app, host="0.0.0.0", port=port, log_level="info")
-    server = Server(config)
-    print("Flask սերվերը սկսում է աշխատել Uvicorn-ով...")
-    await server.serve()
-# -------------------------------------------------------
-
-
 # --- ԿԱՐԳԱՎՈՐՈՒՄՆԵՐ ---
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
+
+# 1. Ձեր նոր, աշխատող TOKEN-ը (դրված է ուղիղ կոդի մեջ)
+BOT_TOKEN = "8048043305:AAE4XS7ksm7K_M43j3pKXw8rJQn4q-KsF0k"
+
+# 2. Գաղտնի ֆայլի անունը
 SERVICE_ACCOUNT_FILE = 'credentials.json' 
-SHEET_URL = "https://docs.google.com/spreadsheets/d/12y7hoaLCJiCSpqumovQWYF7Aqm_3LCQ-YklPJfs6Z38/edit?gid=1797135936#gid=1797135936"  # <-- ՁԵՐ GOOGLE SHEET-Ի ՀՂՈՒՄԸ
+
+# 3. Տեղադրեք ձեր Google Sheet ֆայլի ամբողջական URL-ը (հղումը) այստեղ
+# Օրինակ՝ "https://docs.google.com/spreadsheets/d/....."
+SHEET_URL = "https://docs.google.com/spreadsheets/d/12y7hoaLCJiCSpqumovQWYF7Aqm_3LCQ-YklPJfs6Z38/edit?gid=1797135936#gid=1797135936"  # <--- ՉՄՈՌԱՆԱՔ ՓՈԽԵԼ ՍԱ
 # -----------------------------------------------------------------
 
 
@@ -133,9 +112,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Գրանցումը չեղարկվեց։")
     return ConversationHandler.END
 
-async def run_bot():
-    """Այս ֆունկցիան գործարկում է բոտը"""
-    
+def main() -> None:
+    """Գործարկում է բոտը։"""
     application = Application.builder().token(BOT_TOKEN).build()
 
     conv_handler = ConversationHandler(
@@ -154,25 +132,7 @@ async def run_bot():
 
     application.add_handler(conv_handler)
     print("Բոտը սկսում է աշխատել (polling)...")
-    
-    # Սա այլևս չի արգելափակում հիմնական թրեդը
-    await application.initialize()
-    await application.start()
-    await application.updater.start_polling()
-
-
-# --- ՀԻՄՆԱԿԱՆ ԳՈՐԾԱՐԿՈՒՄ (Asyncio-ով) ---
-async def main():
-    if not BOT_TOKEN:
-        print("ՍԽԱԼ: BOT_TOKEN-ը գտնված չէ։")
-        exit()
-
-    # Ստեղծում ենք երկու առաջադրանք, որոնք կաշխատեն զուգահեռ
-    task1 = asyncio.create_task(run_flask())  # Կայքը
-    task2 = asyncio.create_task(run_bot())    # Բոտը
-
-    await asyncio.gather(task1, task2)
-
+    application.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
