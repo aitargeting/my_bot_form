@@ -13,7 +13,7 @@ from telegram.ext import (
 # --- ԿԱՐԳԱՎՈՐՈՒՄՆԵՐ ---
 
 # 1. Ձեր նոր, աշխատող TOKEN-ը (դրված է ուղիղ կոդի մեջ)
-BOT_TOKEN = "8048043305:AAE4XS7ksm7K_M43j3pKXw8rJQn4q-KsF0k"
+BOT_TOKEN = "8428145637:AAHKcRpu4vdToO8GonzAn22XcLb56q6ipCM"
 
 # 2. Գաղտնի ֆայլի անունը
 SERVICE_ACCOUNT_FILE = 'credentials.json' 
@@ -136,3 +136,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
